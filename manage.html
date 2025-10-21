@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>值日轮值系统 - 成员管理</title>
+<style>
+  /* 全局样式 */
+  body {
+    font-family: "Microsoft YaHei", Arial, sans-serif;
+    background: linear-gradient(to bottom, #e0f0ff, #f0f4f8);
+    margin: 0;
+    padding: 0;
+    color: #333;
+  }
+  h1 {
+    text-align: center;
+    padding: 40px 0 20px 0;
+    color: #1e3d59;
+    font-size: 2.2em;
+    margin: 0;
+  }
+  .container {
+    width: 90%;
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+  }
+  
+  /* 响应式样式 */
+  @media (max-width: 768px) {
+    .container {
+      width: 95%;
+      padding: 10px;
+    }
+    h1 {
+      padding: 20px 0 10px 0;
+      font-size: 1.8em;
+    }
+    .section {
+      padding: 15px;
+    }
+    .btn {
+      width: 100%;
+      margin-bottom: 10px;
+    }
+    input[type="text"] {
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .member-list {
+      overflow-x: auto;
+    }
+  }
+
+  /* 区域选择部分 */
+  .section {
+    background: #fff;
+    padding: 25px 20px;
+    margin-bottom: 30px;
+    border-radius: 14px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  }
+  .section h2 {
+    margin-top: 0;
+    color: #1e3d59;
+    font-size: 1.5em;
+    border-bottom: 2px solid #1e3d59;
+    padding-bottom: 8px;
+  }
+  
+  /* 表单样式 */
+  .form-group {
+    margin-bottom: 15px;
+  }
+  
+  label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+  
+  select, input[type="text"] {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 1em;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+  }
+  
+  .btn {
+    background: #1e3d59;
+    color: #fff;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 1em;
+    margin-top: 15px;
+    transition: all 0.3s ease;
+  }
+  
+  .btn:hover {
+    background: #3a5a77;
+    transform: translateY(-2px);
+  }
+  
+  .btn-danger {
+    background: #e74c3c;
+  }
+  
+  .btn-danger:hover {
+    background: #c0392b;
+  }
+  
+  /* 成员列表样式 */
+  .member-list {
+    margin-top: 20px;
+  }
+  
+  .member-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    margin-bottom: 10px;
+    background: #f8f9fa;
+    border-radius: 8px;
+  }
+  
+  .member-name {
+    font-size: 1.1em;
+    flex: 1;
+  }
+  
+  .member-actions {
+    display: flex;
+    gap: 5px;
+  }
+  
+  .member-actions button {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .move-btn {
+    background: #1e3d59 !important;
+    font-size: 1.2em;
+    width: 36px;
+    height: 36px;
+  }
+  
+  /* 导航链接 */
+  .nav-links {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .nav-links a {
+    color: #1e3d59;
+    text-decoration: none;
+    margin: 0 10px;
+    font-weight: bold;
+  }
+  
+  .nav-links a:hover {
+    text-decoration: underline;
+  }
+  
+  /* 响应式 */
+  @media (max-width: 600px) {
+    .btn { width: 100%; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<h1>值日轮值系统 - 成员管理</h1>
+
+<div class="container">
+  <div class="nav-links" style="text-align: center; margin-bottom: 20px;">
+    <button onclick="window.location.href='index.html'" class="btn" style="background: #1e3d59; color: #fff; border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; font-size: 1em; transition: all 0.3s ease;">返回主页</button>
+  </div>
+
+  <div class="section">
+    <h2>添加成员</h2>
+    <div class="form-group">
+      <label for="addAreaSelect">选择区域：</label>
+      <select id="addAreaSelect">
+        <option value="publicArea">公共区</option>
+        <option value="southArea">南卧+中卧</option>
+        <option value="northArea">北卧+厅卧</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="newMemberName">成员姓名：</label>
+      <input type="text" id="newMemberName" placeholder="请输入成员姓名">
+    </div>
+    <div class="form-group">
+      <button class="btn" onclick="addMember()">添加成员</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>成员列表</h2>
+    <div class="form-group">
+      <label for="viewAreaSelect">查看区域：</label>
+      <select id="viewAreaSelect" onchange="displayMembers()">
+        <option value="publicArea">公共区</option>
+        <option value="southArea">南卧+中卧</option>
+        <option value="northArea">北卧+厅卧</option>
+      </select>
+    </div>
+    <div class="alert" style="background-color: #f8d7da; color: #721c24; padding: 10px; border-radius: 8px; margin-bottom: 15px;">
+      <strong>提示：</strong>调整成员顺序将直接影响值日轮值顺序。拖动成员可以改变他们的值日顺序。
+    </div>
+    <div id="saveStatus" style="display: none; background-color: #d4edda; color: #155724; padding: 10px; border-radius: 8px; margin-bottom: 15px; text-align: center; font-weight: bold;">
+      保存成功！
+    </div>
+    <div id="memberList" class="member-list">
+      <!-- 成员列表将在这里动态生成 -->
+    </div>
+    <button class="btn" onclick="saveData()" style="margin-top: 20px; background-color: #28a745;">保存修改</button>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
+<script>
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyDrlDzvT5fejIc0ZYe6F2i3wj1AFgJkrss",
+    authDomain: "duty-1cbc8.firebaseapp.com",
+    projectId: "duty-1cbc8",
+    storageBucket: "duty-1cbc8.firebasestorage.app",
+    messagingSenderId: "738420474959",
+    appId: "1:738420474959:web:0ac7f3dc89a3a36c6c163a",
+    measurementId: "G-9GD9E7P00D"
+  };
+  
+  // Initialize Firebase
+  const app = firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  
+  // 检查用户是否已登录
+  (function checkLogin() {
+    const isLoggedIn = localStorage.getItem('isLoggedIn');
+    if (isLoggedIn !== 'true') {
+      // 未登录，重定向到登录页面
+      window.location.href = 'login.html';
+    }
+  })();
+
+  // 记录操作日志
+  async function saveLogToFirestore(logEntry) {
+    await db.collection("operationLogs").add(logEntry);
+  }
+
+  // 从localStorage获取区域数据，如果没有则使用默认值
+  let publicArea = [];
+  let southArea = [];
+  let northArea = [];
+
+  // Default member lists
+  const defaultPublicArea = ["镇","旭","大龙","原","磊","泽","深","淳","嶶","飞","学治","勇","清","义志","枫","峰","星宇","茗","龚","军","帆","嶶","林","剑","哲","圣"];
+  const defaultSouthArea = ["叶","峰","浩","学治","深","清","义志","泽","龙","旭","飞","茗","龚","帆"];
+  const defaultNorthArea = ["原","枫","磊","星宇","镇","军","剑","哲","圣","林","淳"];
+
+  async function getAreaMembersFromFirestore(areaKey, defaultList) {
+    const docRef = db.collection("members").doc(areaKey);
+    const doc = await docRef.get();
+    if (doc.exists) {
+      return doc.data().list;
+    } else {
+      await docRef.set({ list: defaultList });
+      return defaultList;
+    }
+  }
+
+  async function initializeMembers() {
+    publicArea = await getAreaMembersFromFirestore("publicArea", defaultPublicArea);
+    southArea = await getAreaMembersFromFirestore("southArea", defaultSouthArea);
+    northArea = await getAreaMembersFromFirestore("northArea", defaultNorthArea);
+    displayMembers(); // Display members after they are loaded
+  }
+
+  // 保存数据到Firestore
+  async function saveData() {
+    await saveMembersToFirestore('publicArea', publicArea);
+    await saveMembersToFirestore('southArea', southArea);
+    await saveMembersToFirestore('northArea', northArea);
+    
+    // 显示保存成功提示
+    const saveStatus = document.getElementById('saveStatus');
+    if (saveStatus) {
+      saveStatus.textContent = '保存成功！';
+      saveStatus.style.display = 'block';
+      setTimeout(() => {
+        saveStatus.style.display = 'none';
+      }, 2000);
+    }
+  }
+
+  // 保存成员列表到 Firestore
+  async function saveMembersToFirestore(areaKey, members) {
+    const docRef = db.collection("members").doc(areaKey);
+    await docRef.set({ list: members });
+    logOperation('保存成员列表', `将 ${areaKey} 的成员列表保存到 Firestore`);
+  }
+
+  // 添加成员
+  async function addMember() {
+    const area = document.getElementById('addAreaSelect').value;
+    const newMemberName = document.getElementById('newMemberName').value.trim();
+
+    if (!newMemberName) {
+      alert('成员姓名不能为空！');
+      return;
+    }
+
+    let members = [];
+    let areaKey = '';
+
+    switch (area) {
+      case 'publicArea':
+        members = publicArea;
+        areaKey = 'publicArea';
+        break;
+      case 'southArea':
+        members = southArea;
+        areaKey = 'southArea';
+        break;
+      case 'northArea':
+        members = northArea;
+        areaKey = 'northArea';
+        break;
+    }
+
+    if (members.includes(newMemberName)) {
+      alert('该成员已存在于当前区域！');
+      return;
+    }
+
+    members.push(newMemberName);
+    await saveMembersToFirestore(areaKey, members);
+    displayMembers();
+    document.getElementById('newMemberName').value = '';
+    logOperation('添加成员', `向 ${areaKey} 添加了成员 ${newMemberName}`);
+  }
+
+  // 删除成员
+  async function deleteMember(area, name) {
+    let members = [];
+    let areaKey = '';
+
+    switch (area) {
+      case 'publicArea':
+        members = publicArea;
+        areaKey = 'publicArea';
+        break;
+      case 'southArea':
+        members = southArea;
+        areaKey = 'southArea';
+        break;
+      case 'northArea':
+        members = northArea;
+        areaKey = 'northArea';
+        break;
+    }
+
+    const index = members.indexOf(name);
+    if (index !== -1) {
+      members.splice(index, 1);
+      await saveMembersToFirestore(areaKey, members);
+      displayMembers();
+      logOperation('删除成员', `从 ${areaKey} 中删除了成员 ${name}`);
+    }
+  }
+
+  // 显示成员列表
+  function displayMembers() {
+    const area = document.getElementById('viewAreaSelect').value;
+    const memberListElement = document.getElementById('memberList');
+    memberListElement.innerHTML = '';
+    
+    let members = [];
+    let areaName = '';
+    
+    switch(area) {
+      case 'publicArea':
+        members = publicArea;
+        areaName = '公共区';
+        break;
+      case 'southArea':
+        members = southArea;
+        areaName = '南卧+中卧';
+        break;
+      case 'northArea':
+        members = northArea;
+        areaName = '北卧+厅卧';
+        break;
+    }
+    
+    if (members.length === 0) {
+      memberListElement.innerHTML = `<p>当前${areaName}没有成员</p>`;
+      return;
+    }
+    
+    members.forEach((name, index) => {
+      const memberItem = document.createElement('div');
+      memberItem.className = 'member-item';
+      memberItem.dataset.name = name;
+      memberItem.dataset.area = area;
+      memberItem.dataset.index = index;
+      
+      const memberName = document.createElement('div');
+      memberName.className = 'member-name';
+      memberName.textContent = name;
+      
+      const memberActions = document.createElement('div');
+      memberActions.className = 'member-actions';
+      
+      // 添加上移按钮
+      if (index > 0) {
+        const upButton = document.createElement('button');
+        upButton.textContent = '↑';
+        upButton.className = 'move-btn';
+        upButton.onclick = () => moveUp(area, index);
+        memberActions.appendChild(upButton);
+      }
+      
+      // 添加下移按钮
+      if (index < members.length - 1) {
+        const downButton = document.createElement('button');
+        downButton.textContent = '↓';
+        downButton.className = 'move-btn';
+        downButton.onclick = () => moveDown(area, index);
+        memberActions.appendChild(downButton);
+      }
+      
+      const deleteButton = document.createElement('button');
+      deleteButton.textContent = '删除';
+      deleteButton.onclick = () => deleteMember(area, name);
+      
+      memberActions.appendChild(deleteButton);
+      memberItem.appendChild(memberName);
+      memberItem.appendChild(memberActions);
+      memberListElement.appendChild(memberItem);
+    });
+  }
+
+  // 上下移动成员函数
+  async function moveUp(area, index) {
+    if (index <= 0) return;
+    
+    let members = [];
+    let areaKey = '';
+
+    switch (area) {
+      case 'publicArea':
+        members = publicArea;
+        areaKey = 'publicArea';
+        break;
+      case 'southArea':
+        members = southArea;
+        areaKey = 'southArea';
+        break;
+      case 'northArea':
+        members = northArea;
+        areaKey = 'northArea';
+        break;
+    }
+
+    // 交换位置
+    [members[index], members[index - 1]] = [members[index - 1], members[index]];
+    await saveMembersToFirestore(areaKey, members);
+    displayMembers();
+    logOperation('调整顺序', `在 ${areaKey} 将成员 ${members[index]} 和 ${members[index - 1]} 的顺序对调`);
+  }
+
+  async function moveDown(area, index) {
+    let members = [];
+    let areaKey = '';
+
+    switch (area) {
+      case 'publicArea':
+        members = publicArea;
+        areaKey = 'publicArea';
+        break;
+      case 'southArea':
+        members = southArea;
+        areaKey = 'southArea';
+        break;
+      case 'northArea':
+        members = northArea;
+        areaKey = 'northArea';
+        break;
+    }
+
+    if (index >= members.length - 1) return;
+
+    // 交换位置
+    [members[index], members[index + 1]] = [members[index + 1], members[index]];
+    await saveMembersToFirestore(areaKey, members);
+    displayMembers();
+    logOperation('调整顺序', `在 ${areaKey} 将成员 ${members[index]} 和 ${members[index + 1]} 的顺序对调`);
+  }
+  
+  // 确保 Firebase 初始化完成后加载成员
+  window.addEventListener('load', async () => {
+    try {
+      await initializeMembers();
+      console.log("成员列表初始化完成");
+    } catch (error) {
+      console.error("初始化失败:", error);
+      alert("加载成员失败，请检查网络连接或 Firebase 配置");
+    }
+  });
+</script>
+
+</body>
+</html>
